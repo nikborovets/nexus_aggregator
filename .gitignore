@@ -67,7 +67,8 @@ Icon
 *.sublime-project
 *.swp
 *.swo
-.cursor/mcp.json
+.cursor/
+!.cursor/rules/
 
 # Временные файлы
 *.bak
