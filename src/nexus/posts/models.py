@@ -36,4 +36,4 @@ class Post(Base):
 
     def __repr__(self) -> str:
         """Строковое представление поста."""
-        return f"<Post {self.id}: {self.title[:50]}...>" 
+        return f"<Post {self.id}: {self.title[:50]}...>"

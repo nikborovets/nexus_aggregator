@@ -1,7 +1,5 @@
 """Сервис для работы с постами в базе данных."""
 
-from typing import List, Optional
-
 from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,7 +15,7 @@ class PostService:
         """Инициализация сервиса."""
         self.session = session
 
-    async def create_posts(self, posts: List[PostCreate]) -> List[PostResponse]:
+    async def create_posts(self, posts: list[PostCreate]) -> list[PostResponse]:
         """
         Создать посты в базе данных с обработкой дубликатов.
 
@@ -45,7 +43,7 @@ class PostService:
             # Используем ON CONFLICT DO NOTHING для идемпотентности
             stmt = insert(Post).values(posts_data)
             stmt = stmt.on_conflict_do_nothing(index_elements=["url"])
-            
+
             await self.session.execute(stmt)
             # В тестах транзакция управляется фикстурой
             # В продакшене commit будет вызван в API слое
@@ -53,14 +51,10 @@ class PostService:
 
             # Получаем созданные посты по URL
             urls = [str(post.url) for post in posts]
-            result = await self.session.execute(
-                select(Post).where(Post.url.in_(urls))
-            )
+            result = await self.session.execute(select(Post).where(Post.url.in_(urls)))
             created_posts = result.scalars().all()
 
-            return [
-                PostResponse.model_validate(post) for post in created_posts
-            ]
+            return [PostResponse.model_validate(post) for post in created_posts]
 
         except Exception as e:
             print(f"Ошибка при создании постов: {e}")
@@ -70,8 +64,8 @@ class PostService:
         self,
         page: int = 1,
         size: int = 50,
-        filters: Optional[PostFilter] = None,
-    ) -> tuple[List[PostResponse], int]:
+        filters: PostFilter | None = None,
+    ) -> tuple[list[PostResponse], int]:
         """
         Получить список постов с пагинацией и фильтрацией.
 
@@ -117,11 +111,7 @@ class PostService:
         total = count_result.scalar() or 0
 
         # Применяем сортировку, пагинацию и выполняем запрос
-        query = (
-            query.order_by(desc(Post.published_at))
-            .offset((page - 1) * size)
-            .limit(size)
-        )
+        query = query.order_by(desc(Post.published_at)).offset((page - 1) * size).limit(size)
 
         result = await self.session.execute(query)
         posts = result.scalars().all()
@@ -131,7 +121,7 @@ class PostService:
             total,
         )
 
-    async def get_post_by_id(self, post_id: int) -> Optional[PostResponse]:
+    async def get_post_by_id(self, post_id: int) -> PostResponse | None:
         """
         Получить пост по ID.
 
@@ -141,9 +131,7 @@ class PostService:
         Returns:
             Схема PostResponse или None если не найден
         """
-        result = await self.session.execute(
-            select(Post).where(Post.id == post_id)
-        )
+        result = await self.session.execute(select(Post).where(Post.id == post_id))
         post = result.scalar_one_or_none()
 
         if not post:
@@ -151,9 +139,7 @@ class PostService:
 
         return PostResponse.model_validate(post)
 
-    async def get_posts_by_source(
-        self, source: str, limit: int = 50
-    ) -> List[PostResponse]:
+    async def get_posts_by_source(self, source: str, limit: int = 50) -> list[PostResponse]:
         """
         Получить посты из конкретного источника.
 
@@ -167,10 +153,7 @@ class PostService:
         limit = min(max(1, limit), 100)
 
         result = await self.session.execute(
-            select(Post)
-            .where(Post.source == source)
-            .order_by(desc(Post.published_at))
-            .limit(limit)
+            select(Post).where(Post.source == source).order_by(desc(Post.published_at)).limit(limit)
         )
         posts = result.scalars().all()
 
@@ -203,7 +186,7 @@ class PostService:
 
         return count_to_delete
 
-    async def get_source_stats(self) -> List[dict]:
+    async def get_source_stats(self) -> list[dict]:
         """
         Получить статистику по источникам.
 
@@ -222,10 +205,12 @@ class PostService:
 
         stats = []
         for row in result:
-            stats.append({
-                "source": row.source,
-                "total_posts": row.total_posts,
-                "latest_post": row.latest_post,
-            })
+            stats.append(
+                {
+                    "source": row.source,
+                    "total_posts": row.total_posts,
+                    "latest_post": row.latest_post,
+                }
+            )
 
-        return stats 
+        return stats

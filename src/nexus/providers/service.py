@@ -1,13 +1,12 @@
 """Сервис-оркестратор для работы с провайдерами контента."""
 
 import asyncio
-from typing import Dict, List
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from nexus.posts.models import Post
 from nexus.posts.schemas import PostCreate
 from nexus.posts.service import PostService
-from nexus.posts.models import Post
 from nexus.providers.base import BaseProvider
 from nexus.providers.hn import HackerNewsProvider
 from nexus.providers.rss import RssProvider
@@ -18,7 +17,7 @@ class ProvidersService:
 
     def __init__(self) -> None:
         """Инициализация сервиса провайдеров."""
-        self.providers: List[BaseProvider] = []
+        self.providers: list[BaseProvider] = []
         self._initialize_providers()
 
     def _initialize_providers(self) -> None:
@@ -56,7 +55,7 @@ class ProvidersService:
         if provider in self.providers:
             self.providers.remove(provider)
 
-    async def get_available_providers(self) -> List[BaseProvider]:
+    async def get_available_providers(self) -> list[BaseProvider]:
         """
         Получить список доступных провайдеров.
 
@@ -67,13 +66,12 @@ class ProvidersService:
 
         # Проверяем доступность всех провайдеров параллельно
         availability_tasks = [
-            self._check_provider_availability(provider)
-            for provider in self.providers
+            self._check_provider_availability(provider) for provider in self.providers
         ]
 
         results = await asyncio.gather(*availability_tasks, return_exceptions=True)
 
-        for provider, is_available in zip(self.providers, results):
+        for provider, is_available in zip(self.providers, results, strict=False):
             if isinstance(is_available, bool) and is_available:
                 available_providers.append(provider)
 
@@ -95,7 +93,7 @@ class ProvidersService:
             print(f"Ошибка при проверке провайдера {provider.source_name}: {e}")
             return False
 
-    async def fetch_all_posts(self, limit_per_provider: int = 20) -> List[PostCreate]:
+    async def fetch_all_posts(self, limit_per_provider: int = 20) -> list[PostCreate]:
         """
         Получить посты от всех доступных провайдеров.
 
@@ -123,7 +121,7 @@ class ProvidersService:
 
         # Объединяем результаты
         all_posts = []
-        for provider, posts in zip(available_providers, results):
+        for provider, posts in zip(available_providers, results, strict=False):
             if isinstance(posts, list):
                 all_posts.extend(posts)
                 print(f"Получено {len(posts)} постов от {provider.source_name}")
@@ -132,13 +130,11 @@ class ProvidersService:
 
         # Удаляем дубликаты по URL
         unique_posts = self._remove_duplicates(all_posts)
-        
+
         print(f"Всего получено {len(all_posts)} постов, уникальных: {len(unique_posts)}")
         return unique_posts
 
-    async def _fetch_from_provider(
-        self, provider: BaseProvider, limit: int
-    ) -> List[PostCreate]:
+    async def _fetch_from_provider(self, provider: BaseProvider, limit: int) -> list[PostCreate]:
         """
         Получить посты от конкретного провайдера.
 
@@ -155,7 +151,7 @@ class ProvidersService:
             print(f"Ошибка при получении постов от {provider.source_name}: {e}")
             return []
 
-    def _remove_duplicates(self, posts: List[PostCreate]) -> List[PostCreate]:
+    def _remove_duplicates(self, posts: list[PostCreate]) -> list[PostCreate]:
         """
         Удалить дубликаты постов по URL.
 
@@ -176,9 +172,7 @@ class ProvidersService:
 
         return unique_posts
 
-    async def fetch_from_source(
-        self, source_name: str, limit: int = 50
-    ) -> List[PostCreate]:
+    async def fetch_from_source(self, source_name: str, limit: int = 50) -> list[PostCreate]:
         """
         Получить посты от конкретного источника.
 
@@ -215,7 +209,7 @@ class ProvidersService:
                 return provider
         return None
 
-    def get_provider_stats(self) -> Dict[str, Dict[str, str]]:
+    def get_provider_stats(self) -> dict[str, dict[str, str]]:
         """
         Получить информацию о всех провайдерах.
 
@@ -228,7 +222,7 @@ class ProvidersService:
                 "type": provider.__class__.__name__,
                 "status": "unknown",  # Статус определяется асинхронно
             }
-            
+
             # Добавляем специфичную информацию для RSS провайдеров
             if isinstance(provider, RssProvider):
                 stats[provider.source_name]["rss_url"] = provider.rss_url
@@ -250,7 +244,7 @@ class ProviderService:
         self.post_service = PostService(db_session)
         self.providers_service = ProvidersService()
 
-    async def aggregate_all_providers(self, limit_per_provider: int = 20) -> Dict[str, List[Post]]:
+    async def aggregate_all_providers(self, limit_per_provider: int = 20) -> dict[str, list[Post]]:
         """
         Агрегация контента от всех провайдеров с сохранением в БД.
 
@@ -261,11 +255,11 @@ class ProviderService:
             Словарь с результатами агрегации {источник: [новые_посты]}
         """
         print(f"[DEBUG] Начинаем агрегацию с лимитом {limit_per_provider} постов на провайдер")
-        
+
         # Получаем посты от всех провайдеров
         all_posts = await self.providers_service.fetch_all_posts(limit_per_provider)
         print(f"[DEBUG] Получено {len(all_posts)} постов от провайдеров")
-        
+
         if not all_posts:
             print("[DEBUG] Нет постов для сохранения")
             return {}
@@ -278,7 +272,7 @@ class ProviderService:
         except Exception as e:
             print(f"[ERROR] Ошибка при сохранении постов: {e}")
             return {}
-        
+
         # Группируем сохраненные посты по источникам
         results = {}
         for post in saved_posts:
@@ -286,10 +280,12 @@ class ProviderService:
                 results[post.source] = []
             results[post.source].append(post)
 
-        print(f"[DEBUG] Результат агрегации: {[(source, len(posts)) for source, posts in results.items()]}")
+        print(
+            f"[DEBUG] Результат агрегации: {[(source, len(posts)) for source, posts in results.items()]}"
+        )
         return results
 
-    async def aggregate_from_source(self, source_name: str, limit: int = 50) -> List[Post]:
+    async def aggregate_from_source(self, source_name: str, limit: int = 50) -> list[Post]:
         """
         Агрегация контента от конкретного источника с сохранением в БД.
 
@@ -302,14 +298,14 @@ class ProviderService:
         """
         # Получаем посты от конкретного источника
         posts = await self.providers_service.fetch_from_source(source_name, limit)
-        
+
         if not posts:
             return []
 
         # Сохраняем в базу данных
         return await self.post_service.create_posts(posts)
 
-    async def get_provider_stats(self) -> Dict[str, Dict[str, str]]:
+    async def get_provider_stats(self) -> dict[str, dict[str, str]]:
         """
         Получить статистику провайдеров.
 
@@ -318,12 +314,12 @@ class ProviderService:
         """
         # Получаем базовую статистику
         stats = self.providers_service.get_provider_stats()
-        
+
         # Добавляем информацию о доступности
         available_providers = await self.providers_service.get_available_providers()
         available_names = {provider.source_name for provider in available_providers}
-        
+
         for source_name in stats:
             stats[source_name]["available"] = source_name in available_names
-        
-        return stats 
+
+        return stats

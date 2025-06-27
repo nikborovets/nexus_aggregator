@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
 **You are a Python 3.13 expert focused on performance, clean code, and modern tooling.**

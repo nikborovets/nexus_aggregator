@@ -96,7 +96,7 @@ node_modules/
 
 # Task files
 # tasks.json
-# tasks/ 
+# tasks/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -246,4 +246,4 @@ Thumbs.db
 
 # Project specific
 *.db
-*.sqlite 
+*.sqlite

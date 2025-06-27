@@ -1,7 +1,6 @@
 """Pydantic схемы для постов."""
 
 from datetime import datetime
-from typing import List, Optional
 
 from pydantic import BaseModel, HttpUrl
 
@@ -32,14 +31,14 @@ class PostResponse(PostBase):
 class PostFilter(BaseModel):
     """Схема для фильтрации постов."""
 
-    source: Optional[str] = None
-    search: Optional[str] = None
+    source: str | None = None
+    search: str | None = None
 
 
 class PostListResponse(BaseModel):
     """Схема для списка постов с метаданными пагинации."""
 
-    posts: List[PostResponse]
+    posts: list[PostResponse]
     total: int
     page: int
     size: int
@@ -50,4 +49,4 @@ class SourceStats(BaseModel):
     """Схема для статистики по источнику."""
 
     source: str
-    total_posts: int 
+    total_posts: int

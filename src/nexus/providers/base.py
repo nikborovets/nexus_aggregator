@@ -1,7 +1,6 @@
 """Базовый класс для всех провайдеров контента."""
 
 from abc import ABC, abstractmethod
-from typing import List
 
 from nexus.posts.schemas import PostCreate
 
@@ -14,7 +13,7 @@ class BaseProvider(ABC):
         self.source_name = source_name
 
     @abstractmethod
-    async def fetch_posts(self, limit: int = 50) -> List[PostCreate]:
+    async def fetch_posts(self, limit: int = 50) -> list[PostCreate]:
         """
         Получить список постов от провайдера.
 
@@ -34,4 +33,4 @@ class BaseProvider(ABC):
         Returns:
             True если провайдер доступен, False иначе
         """
-        pass 
+        pass

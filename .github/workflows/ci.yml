@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgres:15
@@ -99,7 +99,7 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
+
     steps:
     - uses: actions/checkout@v4
 
@@ -136,4 +136,4 @@ jobs:
 
     - name: Run pre-commit
       run: |
-        uv run pre-commit run --all-files 
+        uv run pre-commit run --all-files

@@ -2,7 +2,7 @@
 
 import asyncio
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import httpx
 from pydantic import ValidationError
@@ -21,7 +21,7 @@ class HackerNewsProvider(BaseProvider):
         self.base_url = settings.hackernews_api_url
         self.timeout = 30.0
 
-    async def fetch_posts(self, limit: int = 50) -> List[PostCreate]:
+    async def fetch_posts(self, limit: int = 50) -> list[PostCreate]:
         """
         Получить топ-посты из Hacker News.
 
@@ -60,49 +60,49 @@ class HackerNewsProvider(BaseProvider):
         except Exception:
             return False
 
-    async def _get_top_story_ids(self) -> List[int]:
+    async def _get_top_story_ids(self) -> list[int]:
         """Получить ID топ-постов."""
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.get(f"{self.base_url}/topstories.json")
             response.raise_for_status()
             return response.json()
 
-    async def _get_posts_details(self, story_ids: List[int]) -> List[PostCreate]:
+    async def _get_posts_details(self, story_ids: list[int]) -> list[PostCreate]:
         """Получить детальную информацию о постах."""
         posts = []
-        
+
         # Создаем семафор для ограничения concurrent запросов
         semaphore = asyncio.Semaphore(10)
-        
-        async def fetch_single_post(story_id: int) -> Optional[PostCreate]:
+
+        async def fetch_single_post(story_id: int) -> PostCreate | None:
             async with semaphore:
                 return await self._get_single_post(story_id)
 
         # Получаем все посты параллельно
         tasks = [fetch_single_post(story_id) for story_id in story_ids]
         results = await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         # Фильтруем успешные результаты
         for result in results:
             if isinstance(result, PostCreate):
                 posts.append(result)
-        
+
         return posts
 
-    async def _get_single_post(self, story_id: int) -> Optional[PostCreate]:
+    async def _get_single_post(self, story_id: int) -> PostCreate | None:
         """Получить информацию об одном посте."""
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.get(f"{self.base_url}/item/{story_id}.json")
                 response.raise_for_status()
                 item_data = response.json()
-                
+
                 return self._parse_hn_item(item_data)
         except Exception as e:
             print(f"Ошибка при получении поста {story_id}: {e}")
             return None
 
-    def _parse_hn_item(self, item_data: Dict[str, Any]) -> Optional[PostCreate]:
+    def _parse_hn_item(self, item_data: dict[str, Any]) -> PostCreate | None:
         """Парсинг данных поста из Hacker News."""
         try:
             # Проверяем обязательные поля

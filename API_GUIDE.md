@@ -228,14 +228,14 @@ async def get_posts():
             params={"page": 1, "size": 10}
         )
         posts = response.json()
-        
+
         # Поиск постов по ключевому слову
         response = await client.get(
             "http://localhost:8000/api/v1/posts/",
             params={"search": "AI", "size": 5}
         )
         ai_posts = response.json()
-        
+
         return posts, ai_posts
 
 # Запуск

@@ -92,4 +92,4 @@ docker-compose*
 # README and docs
 README.md
 API_GUIDE.md
-*.md 
+*.md

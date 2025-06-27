@@ -6,7 +6,6 @@ from unittest.mock import AsyncMock, patch
 import pytest
 import respx
 from httpx import Response
-
 from nexus.providers.hn import HackerNewsProvider
 
 
@@ -48,7 +47,9 @@ class TestHackerNewsProvider:
     async def test_is_available_failure(self, provider):
         """Тест неуспешной проверки доступности API."""
         with patch("httpx.AsyncClient") as mock_client:
-            mock_client.return_value.__aenter__.return_value.get.side_effect = Exception("Connection error")
+            mock_client.return_value.__aenter__.return_value.get.side_effect = Exception(
+                "Connection error"
+            )
 
             result = await provider.is_available()
             assert result is False
@@ -66,7 +67,7 @@ class TestHackerNewsProvider:
     async def test_parse_hn_item_success(self, provider, mock_story_data):
         """Тест успешного парсинга поста из HN."""
         result = provider._parse_hn_item(mock_story_data)
-        
+
         assert result is not None
         assert result.title == "Test Post Title"
         assert str(result.url) == "https://example.com/test"
@@ -82,9 +83,9 @@ class TestHackerNewsProvider:
             "type": "story",
             # "url" отсутствует
         }
-        
+
         result = provider._parse_hn_item(story_data)
-        
+
         assert result is not None
         assert result.title == "Ask HN: Self Post"
         assert str(result.url) == "https://news.ycombinator.com/item?id=123456"
@@ -98,22 +99,23 @@ class TestHackerNewsProvider:
             "url": "https://example.com/test",
             # "time" отсутствует
         }
-        
+
         result = provider._parse_hn_item(story_data)
         assert result is None
 
     async def test_fetch_posts_success(self, provider, mock_story_ids, mock_story_data):
         """Тест успешного получения постов."""
-        with patch.object(provider, "is_available", return_value=True), \
-             patch.object(provider, "_get_top_story_ids", return_value=mock_story_ids), \
-             patch.object(provider, "_get_posts_details") as mock_get_details:
-            
+        with (
+            patch.object(provider, "is_available", return_value=True),
+            patch.object(provider, "_get_top_story_ids", return_value=mock_story_ids),
+            patch.object(provider, "_get_posts_details") as mock_get_details,
+        ):
             mock_post_create = AsyncMock()
             mock_post_create.title = "Test Post"
             mock_get_details.return_value = [mock_post_create]
-            
+
             result = await provider.fetch_posts(limit=10)
-            
+
             assert len(result) == 1
             assert result[0] == mock_post_create
             mock_get_details.assert_called_once_with(mock_story_ids[:10])
@@ -126,9 +128,10 @@ class TestHackerNewsProvider:
 
     async def test_fetch_posts_empty_story_ids(self, provider):
         """Тест получения постов при пустом списке ID."""
-        with patch.object(provider, "is_available", return_value=True), \
-             patch.object(provider, "_get_top_story_ids", return_value=[]):
-            
+        with (
+            patch.object(provider, "is_available", return_value=True),
+            patch.object(provider, "_get_top_story_ids", return_value=[]),
+        ):
             result = await provider.fetch_posts()
             assert result == []
 
@@ -140,14 +143,16 @@ class TestHackerNewsProvider:
         )
 
         result = await provider._get_single_post(123456)
-        
+
         assert result is not None
         assert result.title == "Test Post Title"
 
     async def test_get_single_post_http_error(self, provider):
         """Тест получения поста при HTTP ошибке."""
         with patch("httpx.AsyncClient") as mock_client:
-            mock_client.return_value.__aenter__.return_value.get.side_effect = Exception("HTTP Error")
+            mock_client.return_value.__aenter__.return_value.get.side_effect = Exception(
+                "HTTP Error"
+            )
 
             result = await provider._get_single_post(123456)
-            assert result is None 
+            assert result is None

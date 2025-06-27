@@ -1,8 +1,7 @@
 """Провайдер для получения постов из RSS фидов."""
 
 from datetime import datetime
-from typing import List, Optional
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urlparse
 
 import feedparser
 import httpx
@@ -15,7 +14,7 @@ from nexus.providers.base import BaseProvider
 class RssProvider(BaseProvider):
     """Провайдер для получения постов из RSS фидов."""
 
-    def __init__(self, rss_url: str, source_name: Optional[str] = None) -> None:
+    def __init__(self, rss_url: str, source_name: str | None = None) -> None:
         """
         Инициализация RSS провайдера.
 
@@ -32,7 +31,7 @@ class RssProvider(BaseProvider):
         self.rss_url = rss_url
         self.timeout = 30.0
 
-    async def fetch_posts(self, limit: int = 50) -> List[PostCreate]:
+    async def fetch_posts(self, limit: int = 50) -> list[PostCreate]:
         """
         Получить посты из RSS фида.
 
@@ -53,7 +52,7 @@ class RssProvider(BaseProvider):
 
             # Парсинг RSS
             feed = feedparser.parse(rss_content)
-            
+
             if not feed.entries:
                 return []
 
@@ -85,7 +84,7 @@ class RssProvider(BaseProvider):
             except Exception:
                 return False
 
-    async def _fetch_rss_content(self) -> Optional[str]:
+    async def _fetch_rss_content(self) -> str | None:
         """Получить содержимое RSS фида."""
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
@@ -96,7 +95,7 @@ class RssProvider(BaseProvider):
             print(f"Ошибка при получении RSS контента: {e}")
             return None
 
-    def _parse_rss_entry(self, entry) -> Optional[PostCreate]:
+    def _parse_rss_entry(self, entry) -> PostCreate | None:
         """
         Парсинг записи RSS в схему PostCreate.
 
@@ -136,7 +135,7 @@ class RssProvider(BaseProvider):
             print(f"Ошибка при парсинге RSS записи: {e}")
             return None
 
-    def _parse_published_date(self, entry) -> Optional[datetime]:
+    def _parse_published_date(self, entry) -> datetime | None:
         """
         Парсинг даты публикации из RSS записи.
 
@@ -148,7 +147,7 @@ class RssProvider(BaseProvider):
         """
         # Пробуем разные поля для даты
         date_fields = ["published_parsed", "updated_parsed"]
-        
+
         for field in date_fields:
             if hasattr(entry, field):
                 time_struct = getattr(entry, field)
@@ -167,12 +166,10 @@ class RssProvider(BaseProvider):
                     try:
                         # feedparser обычно парсит даты автоматически
                         # но на всякий случай добавим basic parsing
-                        dt = datetime.fromisoformat(
-                            date_string.replace("Z", "+00:00")
-                        )
+                        dt = datetime.fromisoformat(date_string.replace("Z", "+00:00"))
                         # Конвертируем в naive datetime для совместимости
                         return dt.replace(tzinfo=None)
                     except (ValueError, AttributeError):
                         continue
 
-        return None 
+        return None
