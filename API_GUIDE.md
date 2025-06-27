@@ -50,7 +50,8 @@ docker-compose up -d db
 # 2. Установить зависимости
 uv venv
 source .venv/bin/activate
-uv pip install -e .
+# Установить все зависимости, включая dev-инструменты (pytest, ruff, pre-commit)
+uv pip install -e ".[dev]"
 
 # 3. Создать .env файл (если еще не создан)
 echo "DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/nexus_db" > .env

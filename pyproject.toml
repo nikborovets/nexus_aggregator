@@ -9,7 +9,6 @@ packages = ["src/nexus"]
 name = "nexus-aggregator"
 version = "0.1.0"
 description = "Асинхронный агрегатор контента"
-readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi[all]>=0.104.0",
