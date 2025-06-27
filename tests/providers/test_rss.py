@@ -104,25 +104,29 @@ class TestRssProvider:
         with patch("httpx.AsyncClient") as mock_client:
             mock_response = AsyncMock()
             mock_response.text = mock_rss_content
-            mock_response.raise_for_status = AsyncMock()
+            mock_response.raise_for_status = MagicMock()
 
             # Создаем AsyncMock для context manager
             mock_context = AsyncMock()
-            mock_context.get = AsyncMock(return_value=mock_response)
-            mock_client.return_value.__aenter__ = AsyncMock(return_value=mock_context)
-            mock_client.return_value.__aexit__ = AsyncMock(return_value=None)
+            mock_context.get.return_value = mock_response
+            mock_client.return_value.__aenter__.return_value = mock_context
 
             result = await provider._fetch_rss_content()
+            mock_response.raise_for_status.assert_called_once()
             assert result == mock_rss_content
 
     async def test_fetch_rss_content_failure(self, provider):
         """Тест неуспешного получения RSS контента."""
         with patch("httpx.AsyncClient") as mock_client:
-            mock_client.return_value.__aenter__.return_value.get.side_effect = Exception(
-                "Network error"
-            )
+            mock_response = AsyncMock()
+            mock_response.raise_for_status = MagicMock(side_effect=Exception("Network error"))
+
+            mock_context = AsyncMock()
+            mock_context.get.return_value = mock_response
+            mock_client.return_value.__aenter__.return_value = mock_context
 
             result = await provider._fetch_rss_content()
+            mock_response.raise_for_status.assert_called_once()
             assert result is None
 
     def test_parse_rss_entry_success(self, provider, mock_feed_entry):
