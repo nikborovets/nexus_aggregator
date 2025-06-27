@@ -1,0 +1,139 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: nexus_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        uv venv
+        uv pip install -e .
+
+    - name: Lint with ruff
+      run: |
+        uv run ruff check .
+        uv run ruff format --check .
+
+    - name: Type check with mypy (if configured)
+      run: |
+        # Uncomment when mypy is added to dependencies
+        # uv run mypy src/
+
+    - name: Test with pytest
+      env:
+        DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/nexus_test
+      run: |
+        uv run pytest --cov=src --cov-report=xml --cov-report=term-missing
+
+    - name: Upload coverage to Codecov
+      if: matrix.python-version == '3.11'
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Set up Python
+      run: uv python install 3.11
+
+    - name: Install dependencies
+      run: |
+        uv venv
+        uv pip install -e .
+
+    - name: Run safety check
+      run: |
+        uv pip install safety
+        uv run safety check
+
+    - name: Run bandit security linter
+      run: |
+        uv pip install bandit
+        uv run bandit -r src/ -f json -o bandit-report.json || true
+
+  docker:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      run: |
+        docker build -t nexus-aggregator:latest .
+
+    - name: Test Docker image
+      run: |
+        # Basic smoke test
+        docker run --rm nexus-aggregator:latest python -c "import nexus; print('OK')"
+
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Set up Python
+      run: uv python install 3.11
+
+    - name: Install dependencies
+      run: |
+        uv venv
+        uv pip install -e .
+        uv pip install pre-commit
+
+    - name: Run pre-commit
+      run: |
+        uv run pre-commit run --all-files 

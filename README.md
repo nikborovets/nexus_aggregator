@@ -1,164 +1,95 @@
 # Проект "Nexus": Асинхронный агрегатор контента
 
+## Статус проекта: MVP завершен ✅
+
+Проект прошел все стадии разработки от инициализации до деплоя в Docker. Основная функциональность реализована и протестирована.
+
 ## Концепция
 
-Создаем FastAPI-сервис, который:
-1.  **Собирает** посты из разнородных источников (Hacker News, Reddit, RSS-фиды).
-2.  **Нормализует** их в единый формат данных (Pydantic-модель).
-3.  **Сохраняет** в базу данных (PostgreSQL с использованием SQLAlchemy 2.0 async).
-4.  **Отдает** унифицированный список постов через собственный REST API.
-5.  **Обновляет** данные в фоне, чтобы API всегда отдавал свежий контент.
+FastAPI-сервис, который:
+1.  **Собирает** посты из Hacker News и RSS-фидов (`Planet Python`, `RealPython`, `Python Jobs`).
+2.  **Нормализует** их в единую модель данных.
+3.  **Сохраняет** в PostgreSQL, избегая дубликатов.
+4.  **Отдает** контент через REST API с пагинацией и фильтрами.
+5.  **Автоматически обновляет** данные каждые 30 минут в фоновом режиме.
 
-## Ключевые фичи (MVP)
+## Реализованная архитектура и функциональность
 
-*   Агрегация из 2-3 источников: Hacker News (API), любой RSS-фид.
-*   Единая модель поста: `id`, `title`, `url`, `source_name`, `published_at`.
-*   Один API-эндпоинт `GET /api/v1/posts` для получения списка постов с пагинацией.
-*   Фоновая задача для периодического сбора нового контента.
+### Структура проекта
 
----
-
-## 1. Структура проекта
-
-Используем `src`-layout и разделение по доменным областям. Это чище и лучше масштабируется, чем разделение по типам файлов (`routers`, `models`).
+Используется `src`-layout с разделением по доменным областям для лучшей масштабируемости.
 
 ```
 nexus-aggregator/
 ├── .github/workflows/ci.yml   # CI/CD пайплайн
 ├── src/
 │   └── nexus/
-│       ├── __init__.py
-│       ├── main.py              # Инициализация FastAPI приложения
+│       ├── main.py              # Точка входа, lifespan, фоновые задачи
 │       ├── core/
-│       │   ├── __init__.py
-│       │   ├── config.py        # Глобальная конфигурация (Pydantic's BaseSettings)
-│       │   └── db.py            # Настройка подключения к БД (engine, session)
-│       │
+│       │   ├── config.py        # Конфигурация (Pydantic's BaseSettings)
+│       │   └── db.py            # Настройка подключения к БД
 │       ├── posts/
-│       │   ├── __init__.py
-│       │   ├── router.py        # API-роутер для постов (/posts)
-│       │   ├── schemas.py       # Pydantic-схемы для постов (ввод/вывод)
-│       │   ├── models.py        # SQLAlchemy-модели для постов (таблица в БД)
-│       │   └── service.py       # Бизнес-логика: работа с постами в БД
-│       │
+│       │   ├── router.py        # API-роутер для постов
+│       │   ├── schemas.py       # Pydantic-схемы
+│       │   ├── models.py        # SQLAlchemy-модели
+│       │   └── service.py       # Бизнес-логика работы с БД
 │       └── providers/
-│           ├── __init__.py
-│           ├── base.py          # Абстрактный базовый класс для провайдеров
+│           ├── base.py          # Абстрактный базовый класс провайдера
 │           ├── hn.py            # Логика для Hacker News API
 │           ├── rss.py           # Логика для парсинга RSS
-│           └── service.py       # Сервис-оркестратор, вызывающий всех провайдеров
+│           └── service.py       # Сервис-оркестратор провайдеров
 │
-├── tests/                     # Тесты (структура повторяет src/)
-│   ├── conftest.py          # Общие фикстуры (например, test client, db session)
-│   ├── posts/
-│   │   ├── test_router.py
-│   │   └── test_service.py
-│   └── providers/
-│       ├── test_hn.py
-│       └── test_rss.py
-│
-├── .gitignore
-├── .pre-commit-config.yaml    # Конфигурация pre-commit хуков
-└── pyproject.toml             # Зависимости, конфигурация ruff, pytest
+├── tests/                     # Unit и интеграционные тесты
+├── .pre-commit-config.yaml    # Хуки для ruff
+├── pyproject.toml             # Зависимости и конфигурация инструментов
+├── Dockerfile                 # Многоэтапный Dockerfile для продакшена
+└── docker-compose.yml         # Запуск приложения и БД
 ```
 
----
+### Ключевые технические решения
 
-## 2. Модели данных (Pydantic & SQLAlchemy)
+- **Асинхронность**: `async/await` используется для всех I/O операций (HTTP-запросы, работа с БД).
+- **База данных**: SQLAlchemy 2.0 async с `asyncpg`, идемпотентное сохранение через `ON CONFLICT DO NOTHING`.
+- **Фоновые задачи**: Встроенные `lifespan` события и `asyncio.create_task` для периодической агрегации контента без использования тяжелых брокеров вроде Celery.
+- **Тестирование**: Трехуровневая система (unit, integration, api) с использованием `pytest`. Интеграционные тесты работают с реальной тестовой БД в Docker.
+- **CI/CD**: Пайплайн на GitHub Actions, который запускает тесты для Python 3.11 и 3.12, проверяет форматирование и линтинг (`ruff`), и собирает Docker-образ.
+- **Контейнеризация**: Оптимизированный многоэтапный `Dockerfile` и `docker-compose.yml` для легкого запуска всего стека.
 
-#### Pydantic Schema (`src/nexus/posts/schemas.py`)
+### Модели данных
+
+**Pydantic Schema (`schemas.py`)**
 ```python
-from datetime import datetime
-from pydantic import BaseModel, HttpUrl
-
-class PostBase(BaseModel):
+class PostResponse(BaseModel):
+    id: int
     title: str
     url: HttpUrl
     source: str
-
-class PostCreate(PostBase):
-    # Данные, которые мы получаем от провайдеров
-    published_at: datetime
-
-class PostScheme(PostBase):
-    # Данные, которые мы отдаем через API
-    id: int
     published_at: datetime
 
     class Config:
-        orm_mode = True # или from_attributes = True для Pydantic v2
+        from_attributes = True
 ```
 
-#### SQLAlchemy Model (`src/nexus/posts/models.py`)
+**SQLAlchemy Model (`models.py`)**
 ```python
-from datetime import datetime
-from sqlalchemy import Integer, String, DateTime, func
-from sqlalchemy.orm import Mapped, mapped_column
-from nexus.core.db import Base
-
 class Post(Base):
     __tablename__ = "posts"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(String, index=True)
-    url: Mapped[str] = mapped_column(String, unique=True) # Уникальность по URL
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(index=True)
+    url: Mapped[str] = mapped_column(unique=True)
     source: Mapped[str] = mapped_column(String(50), index=True)
-    published_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 ```
 
----
+## Как запустить
 
-## 3. Философия тестирования
+См. подробное руководство [API_GUIDE.md](API_GUIDE.md).
 
-Мы будем использовать три уровня тестов:
+## Потенциальные улучшения (после MVP)
 
-1.  **Unit-тесты (модульные):** Тестируем одну маленькую часть (функцию, класс) в полной изоляции. Внешние зависимости, такие как API-запросы (`httpx`) или база данных, **мокаются** (заменяются на заглушки).
-2.  **Интеграционные тесты:** Проверяем взаимодействие нескольких компонентов (например, роутер -> сервис -> база данных). Используем **тестовую базу данных**.
-3.  **E2E (End-to-End) тесты:** Тестируем полный сценарий работы приложения через его публичный API с помощью `httpx.AsyncClient`.
-
----
-
-## 4. План разработки (по шагам)
-
-**Шаг 1: Инициализация проекта и окружения**
-*   Создать структуру директорий.
-*   Инициализировать `uv`: `uv init`.
-*   Установить зависимости: `uv pip install "fastapi[all]" sqlalchemy[asyncio] asyncpg httpx feedparser`.
-*   Добавить dev-зависимости: `uv pip install -d pytest pytest-asyncio pytest-cov httpx pytest-mock`.
-*   Настроить `pyproject.toml` с `ruff` и `pytest`.
-
-**Шаг 2: Настройка ядра (Core) и базовых тестов**
-*   Настроить асинхронный `engine` и `sessionmaker` для SQLAlchemy в `src/nexus/core/db.py`.
-*   Создать класс настроек Pydantic в `src/nexus/core/config.py`.
-*   Создать фикстуру `client` для `pytest` в `tests/conftest.py`.
-
-**Шаг 3: Реализация провайдеров + Unit-тесты**
-*   Создать абстрактный класс `BaseProvider` в `src/nexus/providers/base.py`.
-*   Реализовать конкретные провайдеры (`HackerNewsProvider`, `RssProvider`).
-*   Написать unit-тесты для каждого провайдера, мокая внешние HTTP-запросы.
-
-**Шаг 4: Реализация сервисов + Интеграционные тесты**
-*   Реализовать сервисные функции для работы с БД (`posts.service.py`), используя `on_conflict_do_nothing` для идемпотентности.
-*   Написать интеграционные тесты для сервисного слоя с использованием временной тестовой БД.
-*   Реализовать сервис-оркестратор `providers.service.py`.
-
-**Ша-г 5: Создание API Endpoint + Интеграционные тесты**
-*   Создать `APIRouter` в `src/nexus/posts/router.py` с эндпоинтом `GET /`.
-*   Написать интеграционные тесты для API, используя `client` и тестовую БД для проверки полного цикла "запрос-ответ".
-
-**Шаг 6: Сборка и фоновые задачи**
-*   Собрать все вместе в `src/nexus/main.py`.
-*   Реализовать запуск агрегации с помощью `BackgroundTasks` FastAPI.
-*   Настроить CI/CD пайплайн в `.github/workflows/ci.yml` для автоматического запуска линтера и тестов.
-
----
-
-## 5. Потенциальные улучшения (после MVP)
-
-*   **Кэширование**: Добавить Redis для кэширования ответов API.
-*   **Аутентификация**: Защитить API с помощью JWT.
-*   **Подписки пользователей**: Дать пользователям возможность самим добавлять RSS-фиды.
-*   **Полнотекстовый поиск**: Интегрировать `Elasticsearch` или `MeiliSearch`.
-*   **Продвинутые фоновые задачи**: Использовать `arq` или `Celery` для более надежного и масштабируемого выполнения фоновых задач по расписанию. 
+- [ ] **Кэширование**: Добавить Redis для кэширования ответов API.
+- [ ] **Аутентификация**: Защитить API с помощью JWT.
+- [ ] **Полнотекстовый поиск**: Интегрировать `MeiliSearch` или `Typesense`.
+- [ ] **Продвинутые фоновые задачи**: Мигрировать на `arq` для более гибкого управления задачами.
+- [ ] **Мониторинг**: Добавить экспорт метрик для Prometheus. 
