@@ -1,0 +1,75 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+.ruff_cache/
+.mypy_cache/
+
+# Виртуальное окружение
+venv/
+ENV/
+env/
+.venv/
+
+# Переменные окружения
+.env
+
+# Файлы проекта
+*.log
+chat_history.json
+history_*.json
+temp_files/
+
+# API ключи и конфиденциальные данные
+*.pem
+*.key
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# IDE
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+.cursor/
+
+# Временные файлы
+*.bak
+*.tmp
+*~
