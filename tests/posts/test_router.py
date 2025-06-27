@@ -4,9 +4,10 @@ from datetime import datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from nexus.posts.schemas import PostCreate
 from nexus.posts.service import PostService
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @pytest.mark.integration

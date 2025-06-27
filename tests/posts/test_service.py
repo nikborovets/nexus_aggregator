@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta
 
 import pytest
+
 from nexus.posts.schemas import PostCreate, PostFilter
 from nexus.posts.service import PostService
 

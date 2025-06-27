@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 import respx
 from httpx import Response
+
 from nexus.providers.hn import HackerNewsProvider
 
 
