@@ -59,6 +59,7 @@ echo "DEBUG=true" >> .env
 
 # 4. Запустить приложение
 uv run uvicorn src.nexus.main:app --reload
+uv run uvicorn src.nexus.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ## Документация API
