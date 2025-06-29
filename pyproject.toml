@@ -9,7 +9,7 @@ packages = ["src/nexus"]
 name = "nexus-aggregator"
 version = "0.1.0"
 description = "Асинхронный агрегатор контента"
-requires-python = ">=3.11"
+requires-python = ">=3.13.5"
 dependencies = [
     "fastapi[all]>=0.104.0",
     "sqlalchemy[asyncio]>=2.0.0",
