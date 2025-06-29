@@ -1,0 +1,47 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "schedule:nonOfficeHours"
+  ],
+  "timezone": "Europe/Moscow",
+  "semanticCommits": "enabled",
+  "dependencyDashboard": true,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on monday"]
+  },
+  "packageRules": [
+    {
+      "description": "Group Python dependencies",
+      "matchCategories": ["python"],
+      "groupName": "Python dependencies",
+      "addLabels": ["dependencies", "python"]
+    },
+    {
+      "description": "Group Docker dependencies",
+      "matchDatasources": ["docker"],
+      "groupName": "Docker dependencies",
+      "addLabels": ["dependencies", "docker"]
+    },
+    {
+      "description": "Group GitHub Actions",
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "addLabels": ["dependencies", "ci"]
+    },
+    {
+      "description": "Auto-merge dev dependencies",
+      "matchDepTypes": ["tool.uv.dev-dependencies"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "automerge": true
+    }
+  ],
+  "prConcurrentLimit": 3,
+  "branchConcurrentLimit": 5,
+  "commitMessagePrefix": "⬆️",
+  "commitMessageTopic": "{{depName}}",
+  "commitMessageExtra": "to {{newVersion}}",
+  "prTitle": "⬆️ Update {{depName}} to {{newVersion}}",
+  "labels": ["dependencies"]
+}

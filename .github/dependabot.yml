@@ -1,24 +1,9 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+# Dependabot отключен - используем Renovate для лучшей поддержки uv
+# См. renovate.json и docs/RENOVATE.md
 
-version: 2
-updates:
-  # Enable version updates for Python uv
-  - package-ecosystem: "uv"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-
-  # Enable version updates for Docker
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-
-  # Enable version updates for GitHub Actions
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
+# version: 2
+# updates:
+#   - package-ecosystem: "uv"
+#     directory: "/"
+#     schedule:
+#       interval: "weekly"
