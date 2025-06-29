@@ -1,9 +1,0 @@
-# Dependabot отключен - используем Renovate для лучшей поддержки uv
-# См. renovate.json и docs/RENOVATE.md
-
-# version: 2
-# updates:
-#   - package-ecosystem: "uv"
-#     directory: "/"
-#     schedule:
-#       interval: "weekly"
