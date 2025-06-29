@@ -123,16 +123,23 @@ jobs:
       uses: aquasecurity/trivy-action@master
       with:
         image-ref: 'nexus-aggregator:latest'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-      continue-on-error: true
+        format: 'table'
 
-    - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v3
-      if: ${{ hashFiles('trivy-results.sarif') != '' }}
-      with:
-        sarif_file: 'trivy-results.sarif'
-      continue-on-error: true
+    # TODO: Добавить загрузку результатов в GitHub Security tab когда настроишь права
+    # - name: Scan Docker image for vulnerabilities (SARIF)
+    #   uses: aquasecurity/trivy-action@master
+    #   with:
+    #     image-ref: 'nexus-aggregator:latest'
+    #     format: 'sarif'
+    #     output: 'trivy-results.sarif'
+    #   continue-on-error: true
+    #
+    # - name: Upload Trivy scan results to GitHub Security tab
+    #   uses: github/codeql-action/upload-sarif@v3
+    #   if: ${{ hashFiles('trivy-results.sarif') != '' }}
+    #   with:
+    #     sarif_file: 'trivy-results.sarif'
+    #   continue-on-error: true
 
   pre-commit:
     runs-on: ubuntu-latest
