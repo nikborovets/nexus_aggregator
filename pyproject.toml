@@ -11,14 +11,14 @@ version = "0.1.0"
 description = "Асинхронный агрегатор контента"
 requires-python = ">=3.13.5"
 dependencies = [
-    "fastapi[all]>=0.104.0",
-    "sqlalchemy[asyncio]>=2.0.0",
-    "asyncpg>=0.29.0",
-    "httpx>=0.25.0",
-    "feedparser>=6.0.0",
-    "pydantic>=2.0.0",
-    "pydantic-settings>=2.0.0",
-    "uvicorn[standard]>=0.24.0",
+    "fastapi[all]>=0.115.13",
+    "sqlalchemy[asyncio]>=2.0.41",
+    "asyncpg>=0.30.0",
+    "httpx>=0.28.1",
+    "feedparser>=6.0.11",
+    "pydantic>=2.9.2",
+    "pydantic-settings>=2.6.0",
+    "uvicorn[standard]>=0.34.3",
 ]
 
 [project.optional-dependencies]
