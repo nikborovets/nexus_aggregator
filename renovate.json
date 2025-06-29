@@ -9,77 +9,165 @@
   "dependencyDashboard": true,
   "lockFileMaintenance": {
     "enabled": true,
-    "schedule": ["before 6am on monday"]
+    "schedule": ["before 6am on monday"],
+    "prCreation": "not-pending",
+    "dependencyDashboardApproval": true
   },
+  "constraintsFiltering": "strict",
+  "transitiveRemediation": true,
+  "vulnerabilityAlerts": {
+    "enabled": true
+  },
+  "osvVulnerabilityAlerts": true,
+  "stopUpdatingLabel": "renovate-stop",
+  "rebaseWhen": "behind-base-branch",
+  "platformAutomerge": true,
+  "updatePinnedDependencies": false,
+  "respectLatest": true,
   "packageRules": [
     {
-      "description": "Group Python dependencies",
-      "matchCategories": ["python"],
-      "groupName": "Python dependencies",
-      "addLabels": ["dependencies", "python"]
+      "description": "🛡️ SECURITY: Handle security vulnerabilities immediately",
+      "matchCategories": ["security"],
+      "prCreation": "immediate",
+      "prPriority": 10,
+      "addLabels": ["security", "high-priority"],
+      "dependencyDashboardApproval": false
     },
     {
-      "description": "Group Docker dependencies",
+      "description": "🔧 ECOSYSTEM: Python ecosystem - group related packages",
+      "matchPackageNames": [
+        "pydantic",
+        "pydantic-core",
+        "pydantic-settings",
+        "pydantic-extra-types",
+        "fastapi",
+        "starlette"
+      ],
+      "groupName": "Python Web Framework",
+      "addLabels": ["dependencies", "python", "ecosystem"],
+      "prCreation": "not-pending",
+      "minimumReleaseAge": "3 days",
+      "stabilityDays": 5
+    },
+    {
+      "description": "🔧 ECOSYSTEM: Security tools with compatibility issues",
+      "matchPackageNames": ["safety", "bandit", "semgrep"],
+      "groupName": "Security Tools",
+      "addLabels": ["dependencies", "security-tools"],
+      "prCreation": "not-pending",
+      "dependencyDashboardApproval": true,
+      "allowedVersions": "!/alpha|beta|rc|dev/"
+    },
+    {
+      "description": "🔧 ECOSYSTEM: Database packages",
+      "matchPackageNames": ["sqlalchemy", "asyncpg", "psycopg2", "alembic"],
+      "groupName": "Database Dependencies",
+      "addLabels": ["dependencies", "database"],
+      "prCreation": "not-pending",
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "description": "📦 TYPE: Production dependencies - conservative approach",
+      "matchDepTypes": ["project.dependencies"],
+      "groupName": "Production Dependencies",
+      "addLabels": ["dependencies", "production"],
+      "prCreation": "not-pending",
+      "dependencyDashboardApproval": true,
+      "stabilityDays": 7,
+      "minimumReleaseAge": "5 days",
+      "respectLatest": true
+    },
+    {
+      "description": "📦 TYPE: Optional dependencies",
+      "matchDepTypes": ["project.optional-dependencies"],
+      "groupName": "Optional Dependencies",
+      "addLabels": ["dependencies", "optional"],
+      "prCreation": "not-pending",
+      "stabilityDays": 3
+    },
+    {
+      "description": "📦 TYPE: Build system - very conservative",
+      "matchDepTypes": ["build-system.requires"],
+      "groupName": "Build System",
+      "addLabels": ["dependencies", "build"],
+      "prCreation": "not-pending",
+      "dependencyDashboardApproval": true,
+      "minimumReleaseAge": "14 days"
+    },
+    {
+      "description": "📦 TYPE: Dev dependencies - safer automerge",
+      "matchDepTypes": ["dependency-groups", "tool.uv.dev-dependencies"],
+      "matchUpdateTypes": ["patch"],
+      "matchCurrentVersion": "!/^0/",
+      "automerge": true,
+      "groupName": "Dev Dependencies (Patch)",
+      "addLabels": ["dependencies", "dev", "patch"],
+      "minimumReleaseAge": "2 days"
+    },
+    {
+      "description": "📦 TYPE: Dev dependencies - minor updates need approval",
+      "matchDepTypes": ["dependency-groups", "tool.uv.dev-dependencies"],
+      "matchUpdateTypes": ["minor"],
+      "groupName": "Dev Dependencies (Minor)",
+      "addLabels": ["dependencies", "dev", "minor"],
+      "prCreation": "not-pending",
+      "stabilityDays": 3
+    },
+    {
+      "description": "🚫 UPDATE TYPE: Major updates - always manual",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true,
+      "addLabels": ["major-update", "manual-review"],
+      "prCreation": "not-pending",
+      "minimumReleaseAge": "14 days",
+      "stabilityDays": 14
+    },
+    {
+      "description": "🚫 UPDATE TYPE: Pre-release versions - block them",
+      "matchCurrentVersion": "/alpha|beta|rc|dev|pre/",
+      "enabled": false,
+      "addLabels": ["blocked", "pre-release"]
+    },
+    {
+      "description": "🐳 PLATFORM: Docker images",
       "matchDatasources": ["docker"],
-      "groupName": "Docker dependencies",
-      "addLabels": ["dependencies", "docker"]
+      "groupName": "Docker Images",
+      "addLabels": ["dependencies", "docker"],
+      "prCreation": "not-pending",
+      "minimumReleaseAge": "7 days",
+      "versioning": "docker"
     },
     {
-      "description": "Group GitHub Actions",
+      "description": "🤖 PLATFORM: GitHub Actions",
       "matchManagers": ["github-actions"],
       "groupName": "GitHub Actions",
-      "addLabels": ["dependencies", "ci"]
+      "addLabels": ["dependencies", "ci"],
+      "prCreation": "not-pending",
+      "minimumReleaseAge": "3 days"
     },
     {
-      "description": "Group production dependencies",
-      "matchDepTypes": ["project.dependencies"],
-      "groupName": "Production dependencies",
-      "addLabels": ["dependencies", "production"]
-    },
-    {
-      "description": "Group optional dependencies",
-      "matchDepTypes": ["project.optional-dependencies"],
-      "groupName": "Optional dependencies",
-      "addLabels": ["dependencies", "optional"]
-    },
-    {
-      "description": "Group build dependencies",
-      "matchDepTypes": ["build-system.requires"],
-      "groupName": "Build dependencies",
-      "addLabels": ["dependencies", "build"]
-    },
-    {
-      "description": "Group dependency groups",
-      "matchDepTypes": ["dependency-groups"],
-      "groupName": "Dev dependencies",
-      "matchUpdateTypes": ["patch", "minor"],
-      "automerge": true,
-      "addLabels": ["dependencies", "dev"]
-    },
-    {
-      "description": "Auto-merge dev dependencies",
-      "matchDepTypes": ["tool.uv.dev-dependencies"],
-      "matchUpdateTypes": ["patch", "minor"],
-      "automerge": true,
-      "groupName": "Dev dependencies",
-      "addLabels": ["dependencies", "dev"]
-    },
-    {
-      "description": "Update ranges for >= dependencies",
+      "description": "⚙️ STRATEGY: Range strategy for >= dependencies",
       "matchManagers": ["pep621"],
       "rangeStrategy": "bump"
     },
     {
-      "description": "Conservative Python dependency updates",
-      "matchManagers": ["pep621"],
-      "matchDepTypes": ["project.dependencies"],
-      "respectLatest": true,
-      "stabilityDays": 3,
-      "prCreation": "immediate"
+      "description": "🔒 COMPATIBILITY: Pin problematic packages",
+      "matchPackageNames": ["safety"],
+      "allowedVersions": "<=3.5.2",
+      "addLabels": ["pinned", "compatibility-issue"],
+      "enabled": true
+    },
+    {
+      "description": "⏰ AGE: Very old dependencies - special attention",
+      "matchCurrentAge": "> 2 years",
+      "groupName": "Ancient Dependencies",
+      "addLabels": ["old-dependency", "tech-debt"],
+      "dependencyDashboardApproval": true,
+      "prCreation": "not-pending"
     }
   ],
-  "prConcurrentLimit": 3,
-  "branchConcurrentLimit": 5,
+  "prConcurrentLimit": 2,
+  "branchConcurrentLimit": 4,
   "commitMessagePrefix": "⬆️",
   "commitMessageTopic": "{{depName}}",
   "commitMessageExtra": "to {{newVersion}}",
