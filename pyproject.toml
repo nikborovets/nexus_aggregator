@@ -9,7 +9,7 @@ packages = ["src/nexus"]
 name = "nexus-aggregator"
 version = "0.1.0"
 description = "Асинхронный агрегатор контента"
-requires-python = ">=3.13.5"
+requires-python = ">=3.13.0"
 dependencies = [
     "fastapi[all]>=0.115.13",
     "sqlalchemy[asyncio]>=2.0.41",
@@ -52,7 +52,7 @@ dev = [
 ]
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py313"
 line-length = 100
 
 [tool.ruff.lint]
@@ -114,7 +114,7 @@ exclude_also = [
 ]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.13"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
