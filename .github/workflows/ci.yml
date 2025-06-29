@@ -111,18 +111,16 @@ jobs:
         # Basic smoke test
         docker run --rm nexus-aggregator:latest python -c "import nexus; print('OK')"
 
-    - name: Scan Docker image for vulnerabilities
-      uses: aquasecurity/trivy-action@master
+    - name: tfsec
+      uses: aquasecurity/tfsec-sarif-action@v0.1.0
       with:
-        image-ref: 'nexus-aggregator:latest'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
+        sarif_file: tfsec.sarif
 
-    - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v3
-      if: always()
+    - name: Upload SARIF file
+      uses: github/codeql-action/upload-sarif@v1
       with:
-        sarif_file: 'trivy-results.sarif'
+        # Path to SARIF file relative to the root of the repository
+        sarif_file: tfsec.sarif
 
   pre-commit:
     runs-on: ubuntu-latest
