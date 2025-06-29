@@ -6,7 +6,7 @@ Nexus Aggregator - это асинхронный веб-сервис на FastAP
 
 ## Технологический стек
 
-- **Backend**: FastAPI + Python 3.11 / 3.12
+- **Backend**: FastAPI + Python 3.13 / 3.12
 - **База данных**: PostgreSQL с async SQLAlchemy 2.0
 - **Тестирование**: pytest, SQLite (для unit-тестов), PostgreSQL (для интеграционных)
 - **HTTP клиент**: httpx
@@ -19,7 +19,7 @@ Nexus Aggregator - это асинхронный веб-сервис на FastAP
 
 ### 1. Требования
 
-- Python 3.11+
+- Python 3.13+
 - uv (`curl -LsSf https://astral.sh/uv/install.sh | sh`)
 - Docker & Docker Compose
 
