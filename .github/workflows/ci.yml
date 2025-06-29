@@ -35,8 +35,12 @@ jobs:
         uv run ruff check src/ tests/ --no-fix
         uv run ruff format --check src/ tests/
 
-        # Безопасность - только в CI
+    - name: Security checks
+      run: |
+        # Проверка уязвимостей в зависимостях
         uv run safety check --json || true
+
+        # Проверка небезопасных практик в коде
         uv run bandit -r src/ -f json -o bandit-report.json || true
 
   test:
