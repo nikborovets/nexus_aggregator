@@ -96,6 +96,7 @@ class Post(Base):
 
 ```bash
 # Запустить все проверки и исправления для всех файлов
+uv run pre-commit install
 uv run pre-commit run --all-files
 ```
 

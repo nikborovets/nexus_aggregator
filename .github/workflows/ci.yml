@@ -31,8 +31,11 @@ jobs:
 
     - name: Code quality checks
       run: |
-        uv run ruff check src/ tests/
+        # Проверяем что код уже отформатирован (pre-commit должен был исправить)
+        uv run ruff check src/ tests/ --no-fix
         uv run ruff format --check src/ tests/
+
+        # Безопасность - только в CI
         uv run safety check --json || true
         uv run bandit -r src/ -f json -o bandit-report.json || true
 
