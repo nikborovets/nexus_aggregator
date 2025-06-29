@@ -1,5 +1,5 @@
 # Используем официальный Python образ
-FROM python:3.11-slim as builder
+FROM python:3.11-slim AS builder
 
 # Устанавливаем uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
