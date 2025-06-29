@@ -49,12 +49,33 @@
       "addLabels": ["dependencies", "build"]
     },
     {
+      "description": "Group dependency groups",
+      "matchDepTypes": ["dependency-groups"],
+      "groupName": "Dev dependencies",
+      "matchUpdateTypes": ["patch", "minor"],
+      "automerge": true,
+      "addLabels": ["dependencies", "dev"]
+    },
+    {
       "description": "Auto-merge dev dependencies",
       "matchDepTypes": ["tool.uv.dev-dependencies"],
       "matchUpdateTypes": ["patch", "minor"],
       "automerge": true,
       "groupName": "Dev dependencies",
       "addLabels": ["dependencies", "dev"]
+    },
+    {
+      "description": "Update ranges for >= dependencies",
+      "matchManagers": ["pep621"],
+      "rangeStrategy": "bump"
+    },
+    {
+      "description": "Conservative Python dependency updates",
+      "matchManagers": ["pep621"],
+      "matchDepTypes": ["project.dependencies"],
+      "respectLatest": true,
+      "stabilityDays": 3,
+      "prCreation": "immediate"
     }
   ],
   "prConcurrentLimit": 3,
