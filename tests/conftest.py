@@ -53,7 +53,7 @@ async def setup_test_db():
 
 
 @pytest_asyncio.fixture
-async def db_session(setup_test_db) -> AsyncGenerator[AsyncSession, None]:
+async def db_session(setup_test_db) -> AsyncGenerator[AsyncSession]:
     """Создание сессии базы данных для тестов с откатом транзакций."""
     async with TestSessionLocal() as session:
         # Начинаем транзакцию

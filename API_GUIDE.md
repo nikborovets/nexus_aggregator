@@ -52,6 +52,7 @@ uv venv
 source .venv/bin/activate
 # Установить все зависимости, включая dev-инструменты (pytest, ruff, pre-commit)
 uv pip install -e ".[dev]"
+uv sync --dev
 
 # 3. Создать .env файл (если еще не создан)
 echo "DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/nexus_db" > .env
