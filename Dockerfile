@@ -1,5 +1,5 @@
 # Используем последнюю версию Python образа
-FROM python:3.11-alpine AS builder
+FROM python:3.11-slim AS builder
 
 # Устанавливаем uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
@@ -24,7 +24,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 RUN uv pip install -e .
 
 # Продакшн стадия
-FROM python:3.11-alpine
+FROM python:3.11-slim
 
 # Устанавливаем системные зависимости для продакшна с обновлениями безопасности
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
