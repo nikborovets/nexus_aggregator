@@ -31,10 +31,30 @@
       "addLabels": ["dependencies", "ci"]
     },
     {
+      "description": "Group production dependencies",
+      "matchDepTypes": ["project.dependencies"],
+      "groupName": "Production dependencies",
+      "addLabels": ["dependencies", "production"]
+    },
+    {
+      "description": "Group optional dependencies",
+      "matchDepTypes": ["project.optional-dependencies"],
+      "groupName": "Optional dependencies",
+      "addLabels": ["dependencies", "optional"]
+    },
+    {
+      "description": "Group build dependencies",
+      "matchDepTypes": ["build-system.requires"],
+      "groupName": "Build dependencies",
+      "addLabels": ["dependencies", "build"]
+    },
+    {
       "description": "Auto-merge dev dependencies",
       "matchDepTypes": ["tool.uv.dev-dependencies"],
       "matchUpdateTypes": ["patch", "minor"],
-      "automerge": true
+      "automerge": true,
+      "groupName": "Dev dependencies",
+      "addLabels": ["dependencies", "dev"]
     }
   ],
   "prConcurrentLimit": 3,
