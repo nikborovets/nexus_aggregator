@@ -93,7 +93,6 @@ celerybeat.pid
 .idea/
 .vscode/
 .cursor/
-!.cursor/rules/
 *.sublime-workspace
 *.sublime-project
 *.swp
