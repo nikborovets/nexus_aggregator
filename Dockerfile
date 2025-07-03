@@ -25,12 +25,12 @@ FROM builder AS test
 # Копируем файлы проекта еще раз, так как они нужны для uv sync
 COPY pyproject.toml uv.lock ./
 # Устанавливаем dev-зависимости поверх production
-RUN uv sync --dev --system
+RUN uv sync --dev
 
 # --- Production Stage ---
 # Наследуемся от базового чистого образа, а не от test,
 # чтобы в итоговый образ не попали dev-зависимости.
-FROM python:3.13-slim
+FROM python:3.13-slim AS prod
 
 # Устанавливаем системные зависимости для продакшна с обновлениями безопасности
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
