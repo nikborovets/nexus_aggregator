@@ -20,7 +20,16 @@ COPY pyproject.toml uv.lock ./
 # Устанавливаем зависимости в системный Python
 RUN uv pip install -e . --system
 
-# Продакшн стадия
+# Новый этап для тестирования
+FROM builder AS test
+# Копируем файлы проекта еще раз, так как они нужны для uv sync
+COPY pyproject.toml uv.lock ./
+# Устанавливаем dev-зависимости поверх production
+RUN uv sync --dev --system
+
+# --- Production Stage ---
+# Наследуемся от базового чистого образа, а не от test,
+# чтобы в итоговый образ не попали dev-зависимости.
 FROM python:3.13-slim
 
 # Устанавливаем системные зависимости для продакшна с обновлениями безопасности
