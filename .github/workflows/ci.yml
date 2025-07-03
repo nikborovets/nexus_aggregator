@@ -128,7 +128,7 @@ jobs:
         load: true
 
     - name: Test Docker image
-      run: docker run --rm nexus-aggregator:test pytest --cov=src --cov-report=xml
+      run: docker run --rm nexus-aggregator:test uv run pytest --cov=src --cov-report=xml
 
     - name: Build and scan production image
       uses: docker/build-push-action@v6
