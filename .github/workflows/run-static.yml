@@ -1,0 +1,63 @@
+name: Static checks
+
+env:
+  # enable colored output
+  PY_COLORS: 1
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        version: "latest"
+        enable-cache: true
+
+    - name: Set up Python
+      run: uv python install 3.13
+
+    - name: Install dependencies
+      run: uv sync --dev
+
+    - name: Code quality checks
+      run: |
+        # Проверяем что код уже отформатирован (pre-commit должен был исправить)
+        uv run ruff check src/ tests/ --no-fix
+        uv run ruff format --check src/ tests/
+
+    - name: Security checks
+      run: |
+        # Проверка уязвимостей в зависимостях
+        uv run safety check --json || true
+
+        # Проверка небезопасных практик в коде
+        uv run bandit -r src/ -f json -o bandit-report.json || true
+
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        version: "latest"
+        enable-cache: true
+
+    - name: Set up Python
+      run: uv python install 3.13
+
+    - name: Install dependencies
+      run: uv sync --dev
+
+    - name: Run pre-commit
+      run: uv run pre-commit run --all-files
