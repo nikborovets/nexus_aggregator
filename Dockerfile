@@ -16,6 +16,7 @@ WORKDIR /app
 
 # Копируем файлы проекта
 COPY pyproject.toml uv.lock ./
+COPY src/ ./src/
 
 # Устанавливаем зависимости в системный Python
 RUN uv pip install -e . --system
@@ -24,6 +25,7 @@ RUN uv pip install -e . --system
 FROM builder AS test
 # Копируем файлы проекта еще раз, так как они нужны для uv sync
 COPY pyproject.toml uv.lock ./
+COPY tests/ ./tests/
 # Устанавливаем dev-зависимости поверх production
 RUN uv sync --dev
 
