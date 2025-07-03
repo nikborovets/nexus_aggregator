@@ -16,12 +16,9 @@ WORKDIR /app
 
 # Копируем файлы проекта
 COPY pyproject.toml uv.lock ./
-COPY src/ ./src/
 
-# Создаем виртуальное окружение и устанавливаем зависимости
-RUN uv venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-RUN uv pip install -e .
+# Устанавливаем зависимости в системный Python
+RUN uv pip install -e . --system
 
 # Продакшн стадия
 FROM python:3.13-slim
@@ -39,9 +36,9 @@ RUN groupadd -r nexus && useradd -r -g nexus nexus
 # Создаем рабочую директорию
 WORKDIR /app
 
-# Копируем виртуальное окружение из builder стадии
-COPY --from=builder /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+# Копируем установленные пакеты из builder стадии
+COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Копируем исходный код
 COPY --chown=nexus:nexus src/ ./src/

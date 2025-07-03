@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:17-alpine
@@ -17,6 +15,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  nexus-app:
+    build: .
+    container_name: nexus-app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/nexus
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   postgres-test:
     image: postgres:17-alpine
