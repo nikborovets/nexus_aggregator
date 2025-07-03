@@ -35,24 +35,19 @@ repos:
       - id: check-added-large-files
         args: ['--maxkb=1000']
       - id: check-merge-conflict
+        args: [--assume-in-merge]
       - id: detect-private-key
       - id: check-case-conflict
       - id: check-docstring-first
       - id: debug-statements
-
-  # TODO: isort не нужен - ruff уже сортирует импорты через правило "I"
-  # Python-специфичные проверки
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        args: ["--profile", "black", "--filter-files"]
+      - id: mixed-line-ending
+      # - id: no-commit-to-branch
 
   # TODO: Включить detect-secrets для production проектов
   # Безопасность (только критичные, быстрые проверки)
-  # - repo: https://github.com/Yelp/detect-secrets
-  #   rev: v1.5.0
-  #   hooks:
-  #     - id: detect-secrets
-  #       args: ['--baseline', '.secrets.baseline']
-  #       exclude: package.lock.json
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: package.lock.json
