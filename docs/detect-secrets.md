@@ -45,6 +45,40 @@ detect-secrets audit --stats .secrets.baseline
 detect-secrets audit --report .secrets.baseline
 ```
 
+### 4. Что делать после ошибки в pre-commit
+
+Когда `detect-secrets` находит секрет в pre-commit hook, выполни эти шаги:
+
+```bash
+# ШАГ 1: Посмотри что именно найдено
+echo "Найденный секрет:"
+git status --porcelain | grep "^[AM]" | cut -c4- | xargs grep -n "секретная_строка"
+
+# ШАГ 2: Запусти интерактивный аудит
+uv run detect-secrets audit .secrets.baseline
+
+# ШАГ 3: После аудита обнови baseline
+uv run detect-secrets scan --baseline .secrets.baseline
+
+# ШАГ 4: Попробуй commit снова
+git commit -m "твое сообщение"
+```
+
+**Быстрый способ для ложных срабатываний:**
+```bash
+# Добавь inline комментарий прямо в файл
+# pragma: allowlist secret
+
+# Или на следующей строке
+# pragma: allowlist nextline secret
+```
+
+**Интерактивный аудит - что нажимать:**
+- `y` - это настоящий секрет (исправь код)
+- `n` - ложное срабатывание (безопасно)
+- `s` - пропустить (оставить без изменений)
+- `q` - выйти из аудита
+
 ## Pre-commit hook
 
 ### .pre-commit-config.yaml
@@ -167,7 +201,7 @@ detect-secrets audit --report --only-real .secrets.baseline
       {
         "type": "Secret Keyword",
         "filename": "config.py",
-        "hashed_secret": "abc123...",
+        "hashed_secret": "abc123...",  # pragma: allowlist secret
         "is_verified": false,
         "line_number": 10
       }
@@ -178,14 +212,27 @@ detect-secrets audit --report --only-real .secrets.baseline
 
 ## Типичные ложные срабатывания
 
+### В коде:
 - `postgres:postgres` - тестовые пароли
 - `localhost:5432` - локальные подключения
 - `127.0.0.1` - локальные IP
-- `example.com` - примеры в документации
-- UUID строки
-- Хеши коммитов
+- `secret_key = "test123"` - тестовые ключи # pragma: allowlist secret
+- UUID строки и хеши коммитов
 
-**Решение**: Используйте аудит для маркировки как `false positive` или inline allowlisting.
+### В документации:
+- `"password": "example"` - примеры в README # pragma: allowlist secret
+- `"token": "abc123"` - примеры в конфигах # pragma: allowlist secret
+- `"hashed_secret": "..."` - структуры JSON # pragma: allowlist secret
+- `API_KEY = "your-key-here"` - плейсхолдеры # pragma: allowlist secret
+
+### Быстрое решение:
+```bash
+# Для текущей ошибки добавь inline:
+"hashed_secret": "abc123...",  # pragma: allowlist secret
+
+# Или запусти аудит:
+uv run detect-secrets audit .secrets.baseline
+```
 
 ## Интеграция с CI/CD
 

@@ -7,8 +7,7 @@ repos:
         args: [ --fix, --exit-non-zero-on-fix ]
       - id: ruff-format
 
-  # TODO: mypy слишком медленный и строгий для pre-commit, оставляем только в CI
-  # Type checking (мягкие настройки для pre-commit, строгие в CI)
+  # TODO: mypy слишком строгий
   # - repo: https://github.com/pre-commit/mirrors-mypy
   #   rev: v1.16.1
   #   hooks:
